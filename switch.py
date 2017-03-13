@@ -1,12 +1,12 @@
 from yard import Yard
 from state import State
-import copy
 
 yard1 = Yard((1,2))
 state1 = State(['a','*','b'],['c','d'])
 
 yard2 = Yard((1,5), (1,2), (2,3), (2,4))
 state2 = State(['*'], ['d'], ['b'], ['a','e'], ['c'])
+goal2 = State(['*','a','b','c','d', 'e'], [], [], [])
 
 yard3 = Yard((1,2),(1,3))
 state3 = State(['*'],['a'],['b'])
@@ -50,7 +50,7 @@ def result(yard, action, state):
         yard.right(stateCopy, int(actionArgs[1]), int(actionArgs[2]))
     elif actionArgs[0] == "left":
         yard.left(stateCopy, int(actionArgs[1]), int(actionArgs[2]))
-    return stateCopy.state
+    return stateCopy
 
 def expand(yard, state):
     actions = possibleActions(yard, state)
@@ -60,6 +60,73 @@ def expand(yard, state):
 
     return expansion
 
+def goalTest(state, goal):
+    return state.state[0] == goal.state[0]
+
+def dls(yard, state, goal, limit):
+    path = []
+    def recursiveDLS(yard, state, goal, limit):
+        if goalTest(state, goal):
+            path.append(state.state)
+            return state
+        elif limit == 0:
+            return "limit"
+        else:
+            limitReached = False
+            for child in expand(yard, state):
+                result = recursiveDLS(yard, child, goal, limit-1)
+                if result == "limit":
+                    limitReached = True
+                elif result is not None:
+                    path.append(state.state)
+                    return result
+            return "limit" if limitReached else None
+    result = recursiveDLS(yard, state, goal, limit)
+    if result == "limit":
+        return result
+    else:
+        return path
+
+def blindSearch(yard, state, goal):
+    for depth in range(50):
+        result = dls(yard, state, goal, depth)
+        if result != "limit":
+            return result
+
+def recursiveBFS(yard, state, goal, h=None):
+    h = memoize(h)
+    def RBFS(yard, state, goal, flimit):
+        if goalTest(state, goal):
+            path.append(state.state)
+            return state, 0   # (The second value is immaterial)
+        children = expand(yard, state)
+        if len(children) == 0:
+            return None, -1
+        for child in children:
+            s.f = max(s.path_cost + h(s), node.f)
+        while True:
+            # Order by lowest f value
+            successors.sort(key=lambda x: x.f)
+            best = successors[0]
+            if best.f > flimit:
+                return None, best.f
+            if len(successors) > 1:
+                alternative = successors[1].f
+            else:
+                alternative = infinity
+            result, best.f = RBFS(problem, best, min(flimit, alternative))
+            if result is not None:
+                return result, best.f
+
+    node = Node(problem.initial)
+    node.f = h(node)
+    result, bestf = RBFS(problem, node, infinity)
+    return result
+
+print blindSearch(yard3, state3, goal3)
+print blindSearch(yard4, state4, goal4)
+print blindSearch(yard5, state5, goal5)
+print blindSearch(yard2, state2, goal2)
 
 # Test containsEngine
 # print state1.containsEngine(1)
@@ -73,9 +140,9 @@ def expand(yard, state):
 
 # print yard1.left(state1,2,1)
 # print yard1.right(state1,2,1)
-print state1.state
+# print state1.state
 
-print expand(yard1, state1)
-print expand(yard3, state3)
-print expand(yard4, state4)
-print expand(yard5, state5)
+# print expand(yard1, state1)
+# print expand(yard3, state3)
+# print expand(yard4, state4)
+# print expand(yard5, state5)
