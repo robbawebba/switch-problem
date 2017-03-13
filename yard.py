@@ -12,3 +12,25 @@ class Yard:
     self.matrix = [[0 for x in range(self.numTracks)] for y in range(self.numTracks)]
     for x in self.connections: # populate the connectivity matrix
       self.matrix[x[0]-1][x[1]-1] = 1
+
+
+  def left(self, state, frm, to):
+      if state.containsEngine(frm) or state.containsEngine(to):
+          for x in self.connections:
+              if x[0] == to and x[1] == frm:
+                state.state[to-1].append(state.state[frm-1].pop(0))
+                return state.state
+          return "(" + str(to) +", "+str(frm)+") not in connectivity list"
+      else:
+          return "Engine is not located in either track"
+
+
+  def right(self, state, frm, to):
+      if state.containsEngine(frm) or state.containsEngine(to):
+          for x in self.connections:
+              if x[0] == frm and x[1] == to:
+                state.state[to-1].insert(0,(state.state[frm-1].pop()))
+                return state.state
+          return "(" + str(frm) +", "+str(to)+") not in connectivity list"
+      else:
+        return "Engine is not located in either track"
