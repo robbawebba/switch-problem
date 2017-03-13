@@ -1,17 +1,14 @@
 class Yard:
-  def __init__(self, connections, state):
-    self.connections = connections
-    self.state = state
+  def __init__(self, *connections):
+    self.connections = connections ## connections list
+    self.numTracks = 0 # number of tracks in the yard
+    for x in self.connections: # Finds the number of tracks (gets the largest track number)
+      if x[0] > self.numTracks:
+        self.numTracks = x[0]
+      if x[1] > self.numTracks:
+        self.numTracks = x[1]
 
-  def containsEngine(self, track):
-      return self.state[track-1].count('*')
-
-  def left(self, frm, to):
-    if self.containsEngine(frm) or self.containsEngine(to):
-      self.state[to-1].append(self.state[frm-1].pop(0))
-      return self.state
-
-  def right(self, frm, to):
-    if self.containsEngine(frm) or self.containsEngine(to):
-      self.state[to-1].insert(0,(self.state[frm-1].pop()))
-      return self.state
+    # connectivity matrix - just another way of storing the track connections
+    self.matrix = [[0 for x in range(self.numTracks)] for y in range(self.numTracks)]
+    for x in self.connections: # populate the connectivity matrix
+      self.matrix[x[0]-1][x[1]-1] = 1
