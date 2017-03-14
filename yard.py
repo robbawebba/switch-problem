@@ -34,3 +34,9 @@ class Yard:
           return "(" + str(frm) +", "+str(to)+") not in connectivity list"
       else:
         return "Engine is not located in either track"
+
+  def adjacent(frm, to):
+      for x in self.connections:
+          if (x[0] == to and x[1] == frm) or (x[1] == to and x[0] == frm):
+              return true
+      return false

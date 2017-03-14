@@ -1,23 +1,24 @@
 from yard import Yard
 from state import State
+import sys
 
 yard1 = Yard((1,2))
 state1 = State(['a','*','b'],['c','d'])
 
 yard2 = Yard((1,5), (1,2), (2,3), (2,4))
 state2 = State(['*'], ['d'], ['b'], ['a','e'], ['c'])
-goal2 = State(['*','a','b','c','d', 'e'], [], [], [])
+goal2 = State(1, ['*','a','b','c','d', 'e'], [], [], [])
 
 yard3 = Yard((1,2),(1,3))
 state3 = State(['*'],['a'],['b'])
-goal3 = State(['*','a','b'], [], [])
+goal3 = State(1, ['*','a','b'], [], [])
 
 yard4 = Yard((1,2),(1,3),(1,4))
 state4 = State(['*'],['a'],['b','c'],['d'])
-goal4 = State(['*','a','b','c','d'], [], [], [])
+goal4 = State(1, ['*','a','b','c','d'], [], [], [])
 yard5 = Yard((1,2),(1,3),(1,4))
 state5 = State(['*'],['a'],['c','b'],['d']) # Note c and b out of order
-goal5 = State(['*','a','b','c','d'], [], [], [])
+goal5 = State(1, ['*','a','b','c','d'], [], [], [])
 
 def possibleActions(yard, state):
   engine = 0 # track number where the engine is located
@@ -61,7 +62,7 @@ def expand(yard, state):
     return expansion
 
 def goalTest(state, goal):
-    return state.state[0] == goal.state[0]
+    return state.state[0] == goal.state[goal.goal-1]
 
 def dls(yard, state, goal, limit):
     path = []
@@ -88,45 +89,69 @@ def dls(yard, state, goal, limit):
         return path
 
 def blindSearch(yard, state, goal):
-    for depth in range(50):
+    for depth in range(sys.maxsize):
         result = dls(yard, state, goal, depth)
         if result != "limit":
             return result
 
+def heuristic(yard, state, goalTrack):
+    sum = 0
+    for track in state.state:
+        for car in track:
+            if track == state.state[goalTrack-1] # car is in the
+                continue
+            if yard.adjacent(goalTrack, state.state.index[track])
+                sum += 1
+            if
+    return sum
+
 def recursiveBFS(yard, state, goal, h=None):
-    h = memoize(h)
-    def RBFS(yard, state, goal, flimit):
+    path = []
+    def RBFS(yard, state, goal, pathCost, flimit):
         if goalTest(state, goal):
+            pathCost+1
             path.append(state.state)
             return state, 0   # (The second value is immaterial)
         children = expand(yard, state)
+        # print children
         if len(children) == 0:
             return None, -1
         for child in children:
-            s.f = max(s.path_cost + h(s), node.f)
+            child.f = max(pathCost + h(yard, child, goal.goal), state.f)
+            # print child.f
         while True:
             # Order by lowest f value
-            successors.sort(key=lambda x: x.f)
-            best = successors[0]
+            children.sort(key=lambda child: child.f)
+            best = children[0]
+            # print best
+            # print best.f
             if best.f > flimit:
                 return None, best.f
-            if len(successors) > 1:
-                alternative = successors[1].f
+            if len(children) > 1:
+                alternative = children[1].f
             else:
-                alternative = infinity
-            result, best.f = RBFS(problem, best, min(flimit, alternative))
+                alternative = -1
+            result, best.f = RBFS(yard, best, goal, pathCost+1, min(flimit, alternative))
             if result is not None:
+                path.append(state.state)
                 return result, best.f
 
-    node = Node(problem.initial)
-    node.f = h(node)
-    result, bestf = RBFS(problem, node, infinity)
-    return result
+    state.f = h(yard,state,goal.goal)
+    result, bestf = RBFS(yard, state, goal, 0, sys.maxsize)
+    # print result, bestf
+    return path
 
-print blindSearch(yard3, state3, goal3)
-print blindSearch(yard4, state4, goal4)
-print blindSearch(yard5, state5, goal5)
-print blindSearch(yard2, state2, goal2)
+# print blindSearch(yard3, state3, goal3)
+# print blindSearch(yard4, state4, goal4)
+# print blindSearch(yard5, state5, goal5)
+# print blindSearch(yard2, state2, goal2)
+
+print recursiveBFS(yard3, state3, goal3, heuristic)
+print recursiveBFS(yard4, state4, goal4, heuristic)
+print recursiveBFS(yard5, state5, goal5, heuristic)
+
+print recursiveBFS(yard2, state2, goal2, heuristic)
+
 
 # Test containsEngine
 # print state1.containsEngine(1)
