@@ -123,9 +123,9 @@ def dls(yard, state, goal, limit): # The purpose of this outer function is to
 # output: the path to the nearest goal state from the given start state
 # This function is the wrapper around the above DLS function that iterates
 # the depth until a solution is found.
-# 
+#
 def blindSearch(yard, state, goal):
-    for depth in range(sys.maxsize):
+    for depth in range(50):
         result = dls(yard, state, goal, depth)
         if result != "limit":
             return result
@@ -155,7 +155,6 @@ def recursiveBFS(yard, state, goal, h=None):
     path = [] # list ot keep track of path cost
     def RBFS(yard, state, goal, pathCost, flimit):
         if goalTest(state, goal): # solution found
-            print "GOAL FOUND"
             pathCost+1
             path.append(state.state)
             return state, 0
@@ -163,11 +162,10 @@ def recursiveBFS(yard, state, goal, h=None):
         if len(children) == 0:
             return None, sys.maxsize
         for child in children: #calculate f(n) for ecery child, save it to child.f
-            print h(yard, child, goal)
             child.f = max(pathCost + h(yard, child, goal), state.f)
 
         while True:
-            print "in loop"
+            # print "in loop"
             # Order by lowest f value
             children.sort(key=lambda child: child.f)
             best = children[0]
@@ -181,9 +179,9 @@ def recursiveBFS(yard, state, goal, h=None):
             else:
                 alternative = sys.maxsize
             result, best.f = RBFS(yard, best, goal, pathCost+1, min(flimit, alternative))
-            print best.f, best.state
+            # print best.f, best.state
             if result is not None:
-                print "HERE"
+                # print "HERE"
                 path.append(state.state)
                 return result, best.f
 
@@ -213,15 +211,15 @@ def recursiveBFS(yard, state, goal, h=None):
 #################################################
 #      Problem 4 Tests
 #################################################
-# print blindSearch(yard3, state3, goal3)
-# print blindSearch(yard4, state4, goal4)
-# print blindSearch(yard5, state5, goal5)
+print blindSearch(yard3, state3, goal3)
+print blindSearch(yard4, state4, goal4)
+print blindSearch(yard5, state5, goal5)
 # print blindSearch(yard2, state2, goal2)
 
 #################################################
 #      Problem 6 Tests
 #################################################
-# print recursiveBFS(yard3, state3, goal3, heuristic)
-# print recursiveBFS(yard4, state4, goal4, heuristic)
-# print recursiveBFS(yard5, state5, goal5, heuristic)
+print recursiveBFS(yard3, state3, goal3, heuristic)
+print recursiveBFS(yard4, state4, goal4, heuristic)
+print recursiveBFS(yard5, state5, goal5, heuristic)
 # print recursiveBFS(yard2, state2, goal2, heuristic)
