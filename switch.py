@@ -3,7 +3,7 @@ from state import State
 import sys
 
 #################################################
-#      State Definitions
+#      State/Yard Definitions
 #################################################
 yard1 = Yard((1,2))
 state1 = State(['a','*','b'],['c','d'])
@@ -67,31 +67,46 @@ def result(yard, action, state):
 #################################################
 #      Problem 3: expand
 #################################################
-# Input:
-# Output: 
+# Input: A yard and a state
+# Output: All possible successor states given the current state.
+# thus function works by getting all possible actions of the current state, and
+# using the result function above to create a list of hypothetical list of
+# resulting states from the possible actions.
 def expand(yard, state):
-    actions = possibleActions(yard, state)
-    expansion = []
+    actions = possibleActions(yard, state) # Get all possible actions for the current state
+    expansion = [] # list of successor states
     for action in actions:
-        expansion.append(result(yard, action, state))
-
+        expansion.append(result(yard, action, state)) # add the resulting state of each action to the expansion
     return expansion
 
+# Input: current state and a goal state
+# Output: determines if the current state provided is equivalent to the goal state provided
+# This function is used in both search algorithms
 def goalTest(state, goal):
     return state.state[goal.goal-1] == goal.state[goal.goal-1]
 
-def dls(yard, state, goal, limit):
+#################################################
+#      Problem 4: blind search
+#################################################
+# Input: a yard, state, a goal state, and the maximum depth of the search.
+# Output: If successful, the function outputs the path to reach the first goal state
+#  if unsuccessful, this function returns the work "limit", signaling to the
+#  iterative outer function, blindSearch (below), that the max depth was reached
+#  in this iteration
+def dls(yard, state, goal, limit): # The purpose of this outer function is to
+# keep track of the path to the nearest goal state. The real DLS algorithm is in
+# the internal function recursiveDLS
     path = []
-    def recursiveDLS(yard, state, goal, limit):
-        if goalTest(state, goal):
-            path.append(state.state)
+    def recursiveDLS(yard, state, goal, limit): # the real DLS algorithm that finds the nearest goal state within the provided limit.
+        if goalTest(state, goal): # check if the current state is a goal state
+            path.append(state.state) # if so, append the state to the path
             return state
-        elif limit == 0:
+        elif limit == 0: # check if the depth limit has been reached
             return "limit"
         else:
             limitReached = False
-            for child in expand(yard, state):
-                result = recursiveDLS(yard, child, goal, limit-1)
+            for child in expand(yard, state): # Here's the expansion part
+                result = recursiveDLS(yard, child, goal, limit-1) # recursivelyh select each child in the order of the expansion
                 if result == "limit":
                     limitReached = True
                 elif result is not None:
@@ -100,15 +115,21 @@ def dls(yard, state, goal, limit):
             return "limit" if limitReached else None
     result = recursiveDLS(yard, state, goal, limit)
     if result == "limit":
-        return result
+        return result  # return limit to the blindSearch funciton if the DLS couldn't search any further
     else:
-        return path
+        return path # return the path to the goal state if it was successful
 
+# Input: a yard, an initial state, and a goal state
+# output: the path to the nearest goal state from the given start state
+# This function is the wrapper around the above DLS function that iterates
+# the depth until a solution is found.
+# 
 def blindSearch(yard, state, goal):
     for depth in range(sys.maxsize):
         result = dls(yard, state, goal, depth)
         if result != "limit":
             return result
+
 # Heuristic function for the informed search. This heuristic is admissible
 # Scoring scheme:
 #  Add 0 if in the goal track AND car is in the correct position
